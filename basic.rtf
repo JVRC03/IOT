@@ -1,20 +1,77 @@
-{\rtf1\ansi\ansicpg1252\cocoartf2822
-\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\froman\fcharset0 Times-Roman;\f1\froman\fcharset0 Times-Bold;}
-{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
-{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;}
-\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
-\deftab720
-\pard\pardeftab720\sa240\partightenfactor0
+. Learned what Tinkercad is and how it can be used for IoT simulations.
+. Explored basic boards and components through hands-on practice.
+. Implemented a simple project: LED light toggling on/off every 1000 milliseconds.
+. Understood step-by-step fundamentals of building and testing IoT circuits.
 
-\f0\fs24 \cf0 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 . Learned what 
-\f1\b Tinkercad
-\f0\b0  is and how it can be used for IoT simulations.\
-. Explored basic 
-\f1\b boards and components
-\f0\b0  through hands-on practice.\
-. Implemented a simple project: 
-\f1\b LED light toggling on/off every 1000 milliseconds
-\f0\b0 .\
-. Understood step-by-step fundamentals of building and testing IoT circuits.\
+
+/* Blink without Delay
+
+ Turns on and off a light emitting diode (LED) connected to a digital
+ pin, without using the delay() function.  This means that other code
+ can run at the same time without being interrupted by the LED code.
+
+ The circuit:
+ * Use the onboard LED.
+ * Note: Most Arduinos have an on-board LED you can control. On the UNO, MEGA and ZERO 
+  it is attached to digital pin 13, on MKR1000 on pin 6. LED_BUILTIN is set to
+  the correct LED pin independent of which board is used.
+  If you want to know what pin the on-board LED is connected to on your Arduino model, check
+  the Technical Specs of your board  at https://www.arduino.cc/en/Main/Products
+
+ created 2005
+ by David A. Mellis
+ modified 8 Feb 2010
+ by Paul Stoffregen
+ modified 11 Nov 2013
+ by Scott Fitzgerald
+ modified 9 Jan 2017
+ by Arturo Guadalupi
+
+
+ This example code is in the public domain.
+
+ http://www.arduino.cc/en/Tutorial/BlinkWithoutDelay
+ */
+
+// constants won't change. Used here to set a pin number :
+const int ledPin =  LED_BUILTIN;// the number of the LED pin
+
+// Variables will change :
+int ledState = LOW;             // ledState used to set the LED
+
+// Generally, you should use "unsigned long" for variables that hold time
+// The value will quickly become too large for an int to store
+unsigned long previousMillis = 0;        // will store last time LED was updated
+
+// constants won't change :
+const long interval = 1000;           // interval at which to blink (milliseconds)
+
+void setup() {
+  // set the digital pin as output:
+  pinMode(ledPin, OUTPUT);
+}
+
+void loop() {
+  // here is where you'd put code that needs to be running all the time.
+
+  // check to see if it's time to blink the LED; that is, if the
+  // difference between the current time and last time you blinked
+  // the LED is bigger than the interval at which you want to
+  // blink the LED.
+  unsigned long currentMillis = millis();
+
+  if (currentMillis - previousMillis >= interval) {
+    // save the last time you blinked the LED
+    previousMillis = currentMillis;
+
+    // if the LED is off turn it on and vice-versa:
+    if (ledState == LOW) {
+      ledState = HIGH;
+    } else {
+      ledState = LOW;
+    }
+
+    // set the LED with the ledState of the variable:
+    digitalWrite(ledPin, ledState);
+  }
 }
