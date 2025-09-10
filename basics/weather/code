@@ -1,0 +1,123 @@
+#include <Adafruit_GFX.h>
+#include <Adafruit_ILI9341.h>
+#include <DHT.h>
+
+// ================= TFT Setup =================
+#define TFT_CS   10
+#define TFT_DC   8
+#define TFT_RST  9
+Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
+
+// ================= DHT Setup =================
+#define DHTPIN 2
+#define DHTTYPE DHT11
+DHT dht(DHTPIN, DHTTYPE);
+
+// ================= Soil Sensor =================
+#define SOIL_PIN A0
+
+// ================= Buzzer =================
+#define BUZZER 7
+
+// ================= Smiley Face Functions =================
+void drawSmiley(int x, int y, uint16_t faceColor) {
+  // Face
+  tft.fillCircle(x, y, 20, faceColor);
+  tft.drawCircle(x, y, 20, ILI9341_BLACK);
+
+  // Eyes
+  tft.fillCircle(x - 7, y - 5, 3, ILI9341_BLACK);
+  tft.fillCircle(x + 7, y - 5, 3, ILI9341_BLACK);
+
+  // Smile (simple parabola)
+  for (int i = -8; i <= 8; i++) {
+    int j = (i * i) / 10;  // curve
+    tft.drawPixel(x + i, y + 8 + j, ILI9341_BLACK);
+  }
+}
+
+void drawSadFace(int x, int y, uint16_t faceColor) {
+  // Face
+  tft.fillCircle(x, y, 20, faceColor);
+  tft.drawCircle(x, y, 20, ILI9341_BLACK);
+
+  // Eyes
+  tft.fillCircle(x - 7, y - 5, 3, ILI9341_BLACK);
+  tft.fillCircle(x + 7, y - 5, 3, ILI9341_BLACK);
+
+  // Sad mouth (inverted parabola)
+  for (int i = -8; i <= 8; i++) {
+    int j = (i * i) / 10;
+    tft.drawPixel(x + i, y + 15 - j, ILI9341_BLACK);
+  }
+}
+
+void setup() {
+  Serial.begin(9600);
+  dht.begin();
+
+  pinMode(BUZZER, OUTPUT);
+  digitalWrite(BUZZER, LOW);
+
+  tft.begin();
+  tft.setRotation(1);
+  tft.fillScreen(ILI9341_BLACK);
+  tft.setTextSize(2);
+  tft.setTextColor(ILI9341_WHITE);
+  tft.println("Smart Farm Monitor");
+  delay(2000);
+}
+
+void loop() {
+  // Read sensors
+  float temp = dht.readTemperature();
+  float hum = dht.readHumidity();
+  int soilRaw = analogRead(SOIL_PIN);
+
+  // Map soil value to percentage
+  int soilPercent = map(soilRaw, 1023, 200, 0, 100);
+  if (soilPercent > 100) soilPercent = 100;
+  if (soilPercent < 0) soilPercent = 0;
+
+  // Serial debug
+  Serial.print("Temp: "); Serial.print(temp);
+  Serial.print(" Hum: "); Serial.print(hum);
+  Serial.print(" Soil: "); Serial.println(soilPercent);
+
+  // Clear TFT
+  tft.fillScreen(ILI9341_BLACK);
+
+  // Display Temperature
+  tft.setCursor(10, 30);
+  tft.setTextColor(ILI9341_GREEN);
+  tft.print("Temp: "); tft.print(temp); tft.println(" C");
+
+  // Display Humidity
+  tft.setCursor(10, 70);
+  tft.setTextColor(ILI9341_CYAN);
+  tft.print("Humidity: "); tft.print(hum); tft.println(" %");
+
+  // Display Soil
+  tft.setCursor(10, 110);
+  tft.setTextColor(ILI9341_YELLOW);
+  tft.print("Soil: "); tft.print(soilPercent); tft.println(" %");
+
+  // Alerts & Faces
+  if (temp > 35 || soilPercent < 30) {
+    digitalWrite(BUZZER, HIGH);
+    tft.setCursor(10, 160);
+    tft.setTextSize(3);
+    tft.setTextColor(ILI9341_RED);
+    tft.println("ALERT!");
+    drawSadFace(250, 180, ILI9341_RED);  // Sad face
+  } else {
+    digitalWrite(BUZZER, LOW);
+    tft.setCursor(10, 160);
+    tft.setTextSize(3);
+    tft.setTextColor(ILI9341_GREEN);
+    tft.println("OK");
+    drawSmiley(250, 180, ILI9341_GREEN); // Happy face
+  }
+
+  delay(2000);
+}
