@@ -1,0 +1,29 @@
+import requests
+import random
+import time
+
+# ThingSpeak details
+API_KEY = "UU6JJXG2GZFIY3TC"  # Replace with your Write API Key
+URL = "https://api.thingspeak.com/update"
+
+while True:
+    # Generate random constrained values
+    temperature = random.randint(20, 35)  # 20–35 °C
+    humidity = random.randint(40, 70)     # 40–70 %
+
+    # Send data to ThingSpeak
+    payload = {
+        'api_key': API_KEY,
+        'field1': temperature,
+        'field2': humidity
+    }
+
+    response = requests.get(URL, params=payload)
+
+    if response.status_code == 200 and response.text != "0":
+        print(f"✅ Sent -> Temp: {temperature}°C, Humidity: {humidity}%")
+    else:
+        print(f"❌ Failed to send. Response: {response.text}")
+
+    # ThingSpeak requires at least 15 sec delay
+    time.sleep(15)
